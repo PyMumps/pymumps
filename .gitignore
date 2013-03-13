@@ -1,0 +1,4 @@
+*.py[oc]
+*~
+build
+__pycache__
