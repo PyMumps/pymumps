@@ -291,22 +291,22 @@ cdef class DMUMPS_STRUC_C:
 
     property version_number:
         def __get__(self):
-            return <str> self.ob.version_number
+            return (<bytes> self.ob.version_number).decode('ascii')
 
     property ooc_tmpdir:
         def __get__(self):
-            return <str> self.ob.ooc_tmpdir
+            return (<bytes> self.ob.ooc_tmpdir).decode('ascii')
         def __set__(self, char *value):
             strncpy(self.ob.ooc_tmpdir, value, sizeof(self.ob.ooc_tmpdir))
     property ooc_prefix:
         def __get__(self):
-            return <str> self.ob.ooc_prefix
+            return (<bytes> self.ob.ooc_prefix).decode('ascii')
         def __set__(self, char *value):
             strncpy(self.ob.ooc_prefix, value, sizeof(self.ob.ooc_prefix))
 
     property write_problem:
         def __get__(self):
-            return <str> self.ob.write_problem
+            return (<bytes> self.ob.write_problem).decode('ascii')
         def __set__(self, char *value):
             strncpy(self.ob.write_problem, value, sizeof(self.ob.write_problem))
 
@@ -317,7 +317,7 @@ cdef class DMUMPS_STRUC_C:
 def dmumps_c(DMUMPS_STRUC_C s not None):
     c_dmumps_c(&s.ob)
 
-__version__ = <str> MUMPS_VERSION
+__version__ = (<bytes> MUMPS_VERSION).decode('ascii')
 
 ########################################################################
 # Casting routines.
