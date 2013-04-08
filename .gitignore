@@ -1,4 +1,6 @@
+MANIFEST
+build
+dist
 *.py[oc]
 *~
-build
 __pycache__
