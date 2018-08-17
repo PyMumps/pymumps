@@ -1,5 +1,5 @@
 import warnings
-import _dmumps
+import mumps._dmumps
 
 __all__ = [
     'DMumpsContext',
