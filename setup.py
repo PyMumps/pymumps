@@ -16,7 +16,7 @@ or upgrade to a recent PIP release.
 
 setup(
     name='PyMUMPS',
-    version='0.1',
+    version='0.2',
     description='Python bindings for MUMPS, a parallel sparse direct solver',
     author='Bradley M. Froehle',
     author_email='brad.froehle@gmail.com',
