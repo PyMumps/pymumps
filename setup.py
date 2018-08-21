@@ -2,6 +2,17 @@
 
 from distutils.core import setup, Extension
 
+try:
+    import Cython
+except ImportError:
+    raise ImportError('''
+Cython is required for building this package. Please install using
+
+    pip install cython
+
+or upgrade to a recent PIP release.
+''')
+
 setup(
     name='PyMUMPS',
     version='0.1',
@@ -14,7 +25,7 @@ setup(
     ext_modules=[
         Extension(
             'mumps._dmumps',
-            sources=['mumps/_dmumps.c'],
+            sources=['mumps/_dmumps.pyx'],
             libraries=['dmumps'],
         ),
     ],
