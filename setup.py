@@ -20,7 +20,7 @@ with open('README.md') as f:
 
 setup(
     name='PyMUMPS',
-    version='0.2',
+    version='0.3',
     description='Python bindings for MUMPS, a parallel sparse direct solver',
     long_description=long_description,
     long_description_content_type='text/markdown',
