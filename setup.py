@@ -32,6 +32,7 @@ setup(
             libraries=['dmumps'],
         ),
     ],
+    install_requires=['mpi4py'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
