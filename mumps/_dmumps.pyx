@@ -88,7 +88,7 @@ cdef extern from "dmumps_c.h":
         # To save the matrix in matrix market format
         char *write_problem
         MUMPS_INT      lwk_user
-    void c_dmumps_c "dmumps_c" (c_DMUMPS_STRUC_C *)
+    void c_dmumps_c "dmumps_c" (c_DMUMPS_STRUC_C *) nogil
 
 cdef class DMUMPS_STRUC_C:
     cdef c_DMUMPS_STRUC_C ob
@@ -315,7 +315,8 @@ cdef class DMUMPS_STRUC_C:
         def __set__(self, value): self.ob.lwk_user = value
 
 def dmumps_c(DMUMPS_STRUC_C s not None):
-    c_dmumps_c(&s.ob)
+    with nogil:
+        c_dmumps_c(&s.ob)
 
 __version__ = (<bytes> MUMPS_VERSION).decode('ascii')
 
