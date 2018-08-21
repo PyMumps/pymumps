@@ -14,10 +14,16 @@ or upgrade to a recent PIP release.
 ''')
 
 
+with open('README.md') as f:
+    long_description = f.read()
+
+
 setup(
     name='PyMUMPS',
     version='0.2',
     description='Python bindings for MUMPS, a parallel sparse direct solver',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Bradley M. Froehle',
     author_email='brad.froehle@gmail.com',
     maintainer='Stephan Rave',
