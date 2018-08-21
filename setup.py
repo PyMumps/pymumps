@@ -13,14 +13,17 @@ Cython is required for building this package. Please install using
 or upgrade to a recent PIP release.
 ''')
 
+
 setup(
     name='PyMUMPS',
     version='0.1',
     description='Python bindings for MUMPS, a parallel sparse direct solver',
     author='Bradley M. Froehle',
     author_email='brad.froehle@gmail.com',
+    maintainer='Stephan Rave',
+    maintainer_email='stephan.rave@uni-muenster.de',
     license='BSD',
-    url='http://github.com/bfroehle/pymumps',
+    url='http://github.com/sdrave/pymumps',
     packages=['mumps'],
     ext_modules=[
         Extension(
