@@ -20,7 +20,7 @@ with open('README.md') as f:
 
 setup(
     name='PyMUMPS',
-    version='0.3.1',
+    version='0.3.2',
     description='Python bindings for MUMPS, a parallel sparse direct solver',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -29,7 +29,7 @@ setup(
     maintainer='Stephan Rave',
     maintainer_email='stephan.rave@uni-muenster.de',
     license='BSD',
-    url='http://github.com/sdrave/pymumps',
+    url='http://github.com/pymumps/pymumps',
     packages=['mumps'],
     ext_modules=[
         Extension(
