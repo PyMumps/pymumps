@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from setuptools import setup, Extension
 
 try:
@@ -16,6 +17,17 @@ or upgrade to a recent PIP release.
 
 with open('README.md') as f:
     long_description = f.read()
+
+
+extension_kwargs = {
+    'libraries': os.environ.get('PYMUMPS_SETUP_LIBRARIES', 'dmumps').split(':')
+}
+if 'PYMUMPS_SETUP_INCLUDE_DIRS' in os.environ:
+    extension_kwargs['include_dirs'] = \
+        os.environ['PYMUMPS_SETUP_INCLUDE_DIRS'].split(':')
+if 'PYMUMPS_SETUP_LIBRARY_DIRS' in os.environ:
+    extension_kwargs['library_dirs'] = \
+        os.environ['PYMUMPS_SETUP_LIBRARY_DIRS'].split(':')
 
 
 setup(
@@ -35,7 +47,7 @@ setup(
         Extension(
             'mumps._dmumps',
             sources=['mumps/_dmumps.pyx'],
-            libraries=['dmumps'],
+            **extension_kwargs
         ),
     ],
     install_requires=['mpi4py'],
