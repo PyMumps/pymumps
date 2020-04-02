@@ -43,7 +43,6 @@ setup(
             extra_objects=[
                 #'/usr/lib/x86_64-linux-gnu/libdmumps.a',
                 #'/usr/lib/x86_64-linux-gnu/libmumps_common.a',
-                #'/usr/lib/x86_64-linux-gnu/liblapack.a',
                 '/home/robert/solvers/MUMPS_5.2.1/lib/libdmumps.a',
                 '/home/robert/solvers/MUMPS_5.2.1/lib/libmumps_common.a',
                 '/home/robert/solvers/MUMPS_5.2.1/libseq/libmpiseq.a',
