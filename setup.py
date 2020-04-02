@@ -40,6 +40,9 @@ setup(
                 'lapack',
                 'gomp',
                 ],
+            include_dirs=[
+                '/home/robert/solvers/MUMPS_5.2.1/include',
+                ],
             extra_objects=[
                 #'/usr/lib/x86_64-linux-gnu/libdmumps.a',
                 #'/usr/lib/x86_64-linux-gnu/libmumps_common.a',
