@@ -19,8 +19,8 @@ with open('README.md') as f:
     long_description = f.read()
 
 extension_kwargs = {
-        'libraries': os.environ.get('PYMUMPS_SETUP_LIBRARIES', 'dmumps').split(':')
-        }
+    'libraries': os.environ.get('PYMUMPS_SETUP_LIBRARIES', 'dmumps').split(':')
+}
 if 'PYMUMPS_SETUP_INCLUDE_DIRS' in os.environ:
     extension_kwargs['include_dirs'] = \
         os.environ['PYMUMPS_SETUP_INCLUDE_DIRS'].split(':')
