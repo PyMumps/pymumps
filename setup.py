@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from setuptools import setup, Extension
 
 try:
@@ -16,6 +17,19 @@ or upgrade to a recent PIP release.
 
 with open('README.md') as f:
     long_description = f.read()
+
+extension_kwargs = {
+        'libraries': os.environ.get('PYMUMPS_SETUP_LIBRARIES', 'dmumps').split(':')
+        }
+if 'PYMUMPS_SETUP_INCLUDE_DIRS' in os.environ:
+    extension_kwargs['include_dirs'] = \
+        os.environ['PYMUMPS_SETUP_INCLUDE_DIRS'].split(':')
+if 'PYMUMPS_SETUP_LIBRARY_DIRS' in os.environ:
+    extension_kwargs['library_dirs'] = \
+        os.environ['PYMUMPS_SETUP_LIBRARY_DIRS'].split(':')
+if 'PYMUMPS_SETUP_EXTRA_OBJECTS' in os.environ:
+    extension_kwargs['extra_objects'] = \
+        os.environ['PYMUMPS_SETUP_EXTRA_OBJECTS'].split(':')
 
 
 setup(
@@ -35,21 +49,22 @@ setup(
         Extension(
             'mumps._dmumps',
             sources=['mumps/_dmumps.pyx'],
-            libraries=[
-                'gfortran',
-                'lapack',
-                'gomp',
-                ],
-            include_dirs=[
-                '/home/robert/solvers/MUMPS_5.2.1/include',
-                ],
-            extra_objects=[
-                #'/usr/lib/x86_64-linux-gnu/libdmumps.a',
-                #'/usr/lib/x86_64-linux-gnu/libmumps_common.a',
-                '/home/robert/solvers/MUMPS_5.2.1/lib/libdmumps.a',
-                '/home/robert/solvers/MUMPS_5.2.1/lib/libmumps_common.a',
-                '/home/robert/solvers/MUMPS_5.2.1/libseq/libmpiseq.a',
-                ]
+#            libraries=[
+#                'gfortran',
+#                'lapack',
+#                'gomp',
+#                ],
+#            include_dirs=[
+#                '/home/robert/solvers/MUMPS_5.2.1/include',
+#                ],
+#            extra_objects=[
+#                #'/usr/lib/x86_64-linux-gnu/libdmumps.a',
+#                #'/usr/lib/x86_64-linux-gnu/libmumps_common.a',
+#                '/home/robert/solvers/MUMPS_5.2.1/lib/libdmumps.a',
+#                '/home/robert/solvers/MUMPS_5.2.1/lib/libmumps_common.a',
+#                '/home/robert/solvers/MUMPS_5.2.1/libseq/libmpiseq.a',
+#                ]
+            **extension_kwargs
         ),
     ],
     install_requires=['mpi4py'],
