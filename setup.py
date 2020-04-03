@@ -49,21 +49,6 @@ setup(
         Extension(
             'mumps._dmumps',
             sources=['mumps/_dmumps.pyx'],
-#            libraries=[
-#                'gfortran',
-#                'lapack',
-#                'gomp',
-#                ],
-#            include_dirs=[
-#                '/home/robert/solvers/MUMPS_5.2.1/include',
-#                ],
-#            extra_objects=[
-#                #'/usr/lib/x86_64-linux-gnu/libdmumps.a',
-#                #'/usr/lib/x86_64-linux-gnu/libmumps_common.a',
-#                '/home/robert/solvers/MUMPS_5.2.1/lib/libdmumps.a',
-#                '/home/robert/solvers/MUMPS_5.2.1/lib/libmumps_common.a',
-#                '/home/robert/solvers/MUMPS_5.2.1/libseq/libmpiseq.a',
-#                ]
             **extension_kwargs
         ),
     ],
