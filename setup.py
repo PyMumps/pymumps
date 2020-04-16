@@ -18,6 +18,7 @@ or upgrade to a recent PIP release.
 with open('README.md') as f:
     long_description = f.read()
 
+
 extension_kwargs = {
     'libraries': os.environ.get('PYMUMPS_SETUP_LIBRARIES', 'dmumps').split(':')
 }
