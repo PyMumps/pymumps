@@ -1,16 +1,41 @@
 PyMUMPS: A parallel sparse direct solver
 ========================================
 
+
 Requirements
 ------------
 
 * [MUMPS](http://graal.ens-lyon.fr/MUMPS/)
 * [mpi4py](https://code.google.com/p/mpi4py/)
 
-Getting Started
----------------
 
-Install using `python setup.py install` or run from the local checkout.
+Installation
+------------
+
+PyMUMPS can be installed from PyPI using pip:
+
+```
+pip install pymumps
+```
+
+Custom build flags, e.g. to specify the MUMPS installation location,
+can be specified using `--global-option`:
+
+```
+pip install pymumps --global-option="build_ext" \
+    --global-option="-I$MUMPS_PREFIX/include" \
+    --global-option="-L$MUMPS_PREFIX/lib" \
+```
+
+Use `python setup.py build_ext --help` to get a list of all allowed
+options.
+
+There is also conda recipe:
+
+```
+conda install -c conda-forge pymumps
+```
+
 
 Examples
 --------
