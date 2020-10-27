@@ -35,7 +35,7 @@ setup(
         Extension(
             'mumps._dmumps',
             sources=['mumps/_dmumps.pyx'],
-            libraries=['dmumps'],
+            libraries=['dmumps', 'mumps_common'],
         ),
     ],
     install_requires=['mpi4py'],
