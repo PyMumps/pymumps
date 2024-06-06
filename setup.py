@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import pkgconfig
+
 from setuptools import setup, Extension
 
 try:
@@ -12,6 +14,22 @@ Cython is required for building this package. Please install using
 
 or upgrade to a recent PIP release.
 ''')
+
+
+mumps_libs = ['dmumps', 'mumps_common']
+mumps_includes = []
+mumps_libdirs = []
+
+try:
+    if pkgconfig.exists('coinmumps'):
+        vars = pkgconfig.variables('coinmumps')
+        mumps_includes.append(vars['includedir'])
+        mumps_libdirs.append(vars['libdir'])
+        mumps_libs = ['coinmumps']
+except EnvironmentError:
+    print("pkg-config not installed, trying to build without it.")
+except pkgconfig.PackageNotFoundError:
+    print("coinmumps not found by pkg-config, trying to build without it.")
 
 
 with open('README.md') as f:
@@ -35,7 +53,9 @@ setup(
         Extension(
             'mumps._dmumps',
             sources=['mumps/_dmumps.pyx'],
-            libraries=['dmumps', 'mumps_common'],
+            libraries=mumps_libs,
+            include_dirs=mumps_includes,
+            library_dirs=mumps_libdirs,
         ),
     ],
     install_requires=['mpi4py'],
