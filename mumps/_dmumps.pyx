@@ -10,6 +10,7 @@ DMUMPS_COMPLEX_DTYPE = 'd'
 
 from libc.string cimport strncpy
 
+from libc.stdint cimport uintptr_t, int64_t
 cdef extern from "dmumps_c.h":
 
     ctypedef int MUMPS_INT
@@ -127,82 +128,82 @@ cdef class DMUMPS_STRUC_C:
         def __get__(self): return self.ob.nz
         def __set__(self, value): self.ob.nz = value
     property irn:
-        def __get__(self): return <long> self.ob.irn
-        def __set__(self, long value): self.ob.irn = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.irn
+        def __set__(self, long value): self.ob.irn = <MUMPS_INT*> (<uintptr_t> value)
     property jcn:
-        def __get__(self): return <long> self.ob.jcn
-        def __set__(self, long value): self.ob.jcn = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.jcn
+        def __set__(self, long value): self.ob.jcn = <MUMPS_INT*> (<uintptr_t> value)
     property a:
-        def __get__(self): return <long> self.ob.a
-        def __set__(self, long value): self.ob.a = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.a
+        def __set__(self, long value): self.ob.a = <DMUMPS_COMPLEX*> (<uintptr_t> value)
 
     property nz_loc:
         def __get__(self): return self.ob.nz_loc
         def __set__(self, value): self.ob.nz_loc = value
     property irn_loc:
-        def __get__(self): return <long> self.ob.irn_loc
-        def __set__(self, long value): self.ob.irn_loc = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.irn_loc
+        def __set__(self, long value): self.ob.irn_loc = <MUMPS_INT*> (<uintptr_t> value)
     property jcn_loc:
-        def __get__(self): return <long> self.ob.jcn_loc
-        def __set__(self, long value): self.ob.jcn_loc = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.jcn_loc
+        def __set__(self, long value): self.ob.jcn_loc = <MUMPS_INT*> (<uintptr_t> value)
     property a_loc:
-        def __get__(self): return <long> self.ob.a_loc
-        def __set__(self, long value): self.ob.a_loc = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.a_loc
+        def __set__(self, long value): self.ob.a_loc = <DMUMPS_COMPLEX*> (<uintptr_t> value)
 
     property nelt:
         def __get__(self): return self.ob.nelt
         def __set__(self, value): self.ob.nelt = value
     property eltptr:
-        def __get__(self): return <long> self.ob.eltptr
-        def __set__(self, long value): self.ob.eltptr = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.eltptr
+        def __set__(self, long value): self.ob.eltptr = <MUMPS_INT*> (<uintptr_t> value)
     property eltvar:
-        def __get__(self): return <long> self.ob.eltvar
-        def __set__(self, long value): self.ob.eltvar = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.eltvar
+        def __set__(self, long value): self.ob.eltvar = <MUMPS_INT*> (<uintptr_t> value)
     property a_elt:
-        def __get__(self): return <long> self.ob.a_elt
-        def __set__(self, long value): self.ob.a_elt = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.a_elt
+        def __set__(self, long value): self.ob.a_elt = <DMUMPS_COMPLEX*> (<uintptr_t> value)
 
     property perm_in:
-        def __get__(self): return <long> self.ob.perm_in
-        def __set__(self, long value): self.ob.perm_in = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.perm_in
+        def __set__(self, long value): self.ob.perm_in = <MUMPS_INT*> (<uintptr_t> value)
 
     property sym_perm:
-        def __get__(self): return <long> self.ob.sym_perm
-        def __set__(self, long value): self.ob.sym_perm = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.sym_perm
+        def __set__(self, long value): self.ob.sym_perm = <MUMPS_INT*> (<uintptr_t> value)
     property uns_perm:
-        def __get__(self): return <long> self.ob.uns_perm
-        def __set__(self, long value): self.ob.uns_perm = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.uns_perm
+        def __set__(self, long value): self.ob.uns_perm = <MUMPS_INT*> (<uintptr_t> value)
 
     property colsca:
-        def __get__(self): return <long> self.ob.colsca
-        def __set__(self, long value): self.ob.colsca = <DMUMPS_REAL*> value
+        def __get__(self): return <uintptr_t> self.ob.colsca
+        def __set__(self, long value): self.ob.colsca = <DMUMPS_REAL*> (<uintptr_t> value)
     property rowsca:
-        def __get__(self): return <long> self.ob.rowsca
-        def __set__(self, long value): self.ob.rowsca = <DMUMPS_REAL*> value
+        def __get__(self): return <uintptr_t> self.ob.rowsca
+        def __set__(self, long value): self.ob.rowsca = <DMUMPS_REAL*> (<uintptr_t> value)
 
     property rhs:
-        def __get__(self): return <long> self.ob.rhs
-        def __set__(self, long value): self.ob.rhs = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.rhs
+        def __set__(self, long value): self.ob.rhs = <DMUMPS_COMPLEX*> (<uintptr_t> value)
     property redrhs:
-        def __get__(self): return <long> self.ob.redrhs
-        def __set__(self, long value): self.ob.redrhs = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.redrhs
+        def __set__(self, long value): self.ob.redrhs = <DMUMPS_COMPLEX*> (<uintptr_t> value)
     property rhs_sparse:
-        def __get__(self): return <long> self.ob.rhs_sparse
-        def __set__(self, long value): self.ob.rhs_sparse = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.rhs_sparse
+        def __set__(self, long value): self.ob.rhs_sparse = <DMUMPS_COMPLEX*> (<uintptr_t> value)
     property sol_loc:
-        def __get__(self): return <long> self.ob.sol_loc
-        def __set__(self, long value): self.ob.sol_loc = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.sol_loc
+        def __set__(self, long value): self.ob.sol_loc = <DMUMPS_COMPLEX*> (<uintptr_t> value)
 
 
     property irhs_sparse:
-        def __get__(self): return <long> self.ob.irhs_sparse
-        def __set__(self, long value): self.ob.irhs_sparse = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.irhs_sparse
+        def __set__(self, long value): self.ob.irhs_sparse = <MUMPS_INT*> (<uintptr_t> value)
     property irhs_ptr:
-        def __get__(self): return <long> self.ob.irhs_ptr
-        def __set__(self, long value): self.ob.irhs_ptr = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.irhs_ptr
+        def __set__(self, long value): self.ob.irhs_ptr = <MUMPS_INT*> (<uintptr_t> value)
     property isol_loc:
-        def __get__(self): return <long> self.ob.isol_loc
-        def __set__(self, long value): self.ob.isol_loc = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.isol_loc
+        def __set__(self, long value): self.ob.isol_loc = <MUMPS_INT*> (<uintptr_t> value)
 
     property nrhs:
         def __get__(self): return self.ob.nrhs
@@ -266,28 +267,28 @@ cdef class DMUMPS_STRUC_C:
         def __get__(self): return self.ob.deficiency
         def __set__(self, value): self.ob.deficiency = value
     property pivnul_list:
-        def __get__(self): return <long> self.ob.pivnul_list
-        def __set__(self, long value): self.ob.pivnul_list = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.pivnul_list
+        def __set__(self, long value): self.ob.pivnul_list = <MUMPS_INT*> (<uintptr_t> value)
     property mapping:
-        def __get__(self): return <long> self.ob.mapping
-        def __set__(self, long value): self.ob.mapping = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.mapping
+        def __set__(self, long value): self.ob.mapping = <MUMPS_INT*> (<uintptr_t> value)
 
     property size_schur:
         def __get__(self): return self.ob.size_schur
         def __set__(self, value): self.ob.size_schur = value
     property listvar_schur:
-        def __get__(self): return <long> self.ob.listvar_schur
-        def __set__(self, long value): self.ob.listvar_schur = <MUMPS_INT*> value
+        def __get__(self): return <uintptr_t> self.ob.listvar_schur
+        def __set__(self, long value): self.ob.listvar_schur = <MUMPS_INT*> (<uintptr_t> value)
     property schur:
-        def __get__(self): return <long> self.ob.schur
-        def __set__(self, long value): self.ob.schur = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.schur
+        def __set__(self, long value): self.ob.schur = <DMUMPS_COMPLEX*> (<uintptr_t> value)
 
     property instance_number:
         def __get__(self): return self.ob.instance_number
         def __set__(self, value): self.ob.instance_number = value
     property wk_user:
-        def __get__(self): return <long> self.ob.wk_user
-        def __set__(self, long value): self.ob.wk_user = <DMUMPS_COMPLEX*> value
+        def __get__(self): return <uintptr_t> self.ob.wk_user
+        def __set__(self, long value): self.ob.wk_user = <DMUMPS_COMPLEX*> (<uintptr_t> value)
 
     property version_number:
         def __get__(self):
