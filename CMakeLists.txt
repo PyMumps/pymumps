@@ -6,6 +6,8 @@ find_package(
   COMPONENTS Interpreter Development.Module
   REQUIRED)
 
+find_path(MUMPS_INCLUDE_DIR NAMES dmumps_c.h)
+
 find_library(DMUMPS_LIB dmumps)
 find_library(MUMPS_COMMON_LIB mumps_common)
 
@@ -17,6 +19,7 @@ add_custom_command(
   VERBATIM)
 
 python_add_library(_dmumps MODULE _dmumps.c WITH_SOABI)
+target_include_directories(_dmumps PRIVATE MUMPS_INCLUDE_DIR)
 target_link_libraries(_dmumps PRIVATE ${DMUMPS_LIB} ${MUMPS_COMMON_LIB})
 
 install(TARGETS _dmumps DESTINATION mumps)
