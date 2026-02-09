@@ -35,4 +35,5 @@ tracker = "http://github.com/pymumps/pymumps/issues"
 sdist.exclude = [".gitignore", ".gitattributes"]
 
 [tool.scikit-build.wheel]
+exclude = ["**.pyx"]
 packages = ["mumps"]
