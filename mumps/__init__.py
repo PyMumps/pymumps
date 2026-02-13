@@ -169,11 +169,60 @@ class _MumpsBaseContext(object):
         self.id.rhs = self.cast_array(rhs)
 
     def set_icntl(self, idx, val):
-        """Set the icntl value.
+        """Set an icntl value.
 
-        The index should be provided as a 1-based number.
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
         """
-        self.id.icntl[idx-1] = val
+        self.id.icntl[idx - 1] = val
+
+    def get_icntl(self, idx):
+        """Get an icntl value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        return self.id.icntl[idx - 1]
+
+    def set_cntl(self, idx, val):
+        """Set a cntl value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        self.id.cntl[idx - 1] = val
+
+    def get_cntl(self, idx):
+        """Get a cntl value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        return self.id.cntl[idx - 1]
+
+    def get_info(self, idx):
+        """Get an info value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        return self.id.info[idx - 1]
+
+    def get_infog(self, idx):
+        """Get an infog value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        return self.id.infog[idx - 1]
+
+    def get_rinfo(self, idx):
+        """Get a rinfo value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        return self.id.rinfo[idx - 1]
+
+    def get_rinfog(self, idx):
+        """Get a rinfog value.
+
+        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        """
+        return self.id.rinfog[idx - 1]
 
     def set_job(self, job):
         """Set the job."""
