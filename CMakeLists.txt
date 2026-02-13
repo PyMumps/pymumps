@@ -6,8 +6,19 @@ find_package(
   COMPONENTS Interpreter Development.Module
   REQUIRED)
 
-find_path(MUMPS_INCLUDE_DIR dmumps_c.h REQUIRED)
-find_library(DMUMPS_LIB NAMES coinmumps dmumps)
+set(MUMPS_ROOT "" CACHE PATH "MUMPS root directory")
+
+find_path(MUMPS_INCLUDE_DIR 
+    dmumps_c.h 
+    HINTS ${MUMPS_ROOT}
+    PATH_SUFFIXES include include/coin-or/mumps
+    REQUIRED)
+
+find_library(DMUMPS_LIB 
+    NAMES coinmumps dmumps
+    HINTS ${MUMPS_ROOT}/lib
+    REQUIRED
+)
 
 add_custom_command(
   OUTPUT _dmumps.c
