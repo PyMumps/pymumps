@@ -58,3 +58,26 @@ def test_solve_complex(matrix, rhs):
         ctx.run(job=6) # Analysis + Factorization + Solve
 
         assert np.allclose(x, np.arange(1, 6) + np.arange(1, 6) * 2j)
+
+
+def test_spsolve(matrix, rhs):
+    from scipy.sparse import coo_array
+    (n, a, irn, jcn) = matrix
+    A = coo_array((a, (irn - 1, jcn - 1)), shape=(n,n))
+    b = rhs.copy()
+    x = mumps.spsolve(A, b)
+
+    assert np.allclose(b, rhs)
+    assert np.allclose(x, np.arange(1, 6))
+
+
+def test_spsolve_complex(matrix, rhs):
+    from scipy.sparse import coo_array
+    (n, a, irn, jcn) = matrix
+    A = coo_array((a.astype('D'), (irn - 1, jcn - 1)), shape=(n,n))
+    b = rhs + rhs * 2j
+    b_copy = b.copy()
+    x = mumps.spsolve(A, b)
+
+    assert np.allclose(b, b_copy)
+    assert np.allclose(x, np.arange(1, 6) + np.arange(1, 6) * 2j)

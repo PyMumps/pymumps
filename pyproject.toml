@@ -24,6 +24,13 @@ classifiers = [
 ]
 dependencies = [
   "mpi4py",
+  "numpy",
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "scipy",
 ]
 
 [project.urls]
