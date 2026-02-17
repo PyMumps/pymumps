@@ -1,6 +1,5 @@
 import warnings
 import mumps._dmumps
-import mumps._zmumps
 
 __all__ = [
     'DMumpsContext',
@@ -287,11 +286,15 @@ class DMumpsContext(_MumpsBaseContext):
     _mumps_c = staticmethod(_dmumps.dmumps_c)
     _MUMPS_STRUC_C = staticmethod(_dmumps.DMUMPS_STRUC_C)
 
-class ZMumpsContext(_MumpsBaseContext):
+try:
+    import mumps._zmumps
+    class ZMumpsContext(_MumpsBaseContext):
 
-    cast_array = staticmethod(_zmumps.cast_array)
-    _mumps_c = staticmethod(_zmumps.zmumps_c)
-    _MUMPS_STRUC_C = staticmethod(_zmumps.ZMUMPS_STRUC_C)
+        cast_array = staticmethod(_zmumps.cast_array)
+        _mumps_c = staticmethod(_zmumps.zmumps_c)
+        _MUMPS_STRUC_C = staticmethod(_zmumps.ZMUMPS_STRUC_C)
+except ImportError:  # no complex number support
+    pass
 
 ########################################################################
 # Functions
