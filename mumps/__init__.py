@@ -306,7 +306,7 @@ def spsolve(A, b, comm=None):
     # assert A.dtype == 'd' and b.dtype == 'd', "Only double precision supported."
     if A.dtype == 'd' and b.dtype == 'd':
         context = DMumpsContext
-    elif A.dtype == 'D' or b.dtype == 'D':
+    elif A.dtype == 'D' and b.dtype == 'D':
         context = ZMumpsContext
     else:
         raise ValueError('Unsupported data types.')
