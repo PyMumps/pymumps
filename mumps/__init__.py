@@ -2,14 +2,15 @@ import warnings
 import mumps._dmumps
 
 __all__ = [
-    'DMumpsContext',
-    'ZMumpsContext',
-    'spsolve',
-    ]
+    "DMumpsContext",
+    "ZMumpsContext",
+    "spsolve",
+]
 
 ########################################################################
 # Classes
 ########################################################################
+
 
 # The main class which is shared between the various datatype variants.
 class _MumpsBaseContext(object):
@@ -51,6 +52,7 @@ class _MumpsBaseContext(object):
         """
         if comm is None:
             from mpi4py import MPI
+
             comm = MPI.COMM_WORLD
         self.comm = comm
 
@@ -58,9 +60,9 @@ class _MumpsBaseContext(object):
         self.id.par = par
         self.id.sym = sym
         self.id.comm_fortran = comm.py2f()
-        self.run(job = -1) # JOB_INIT
+        self.run(job=-1)  # JOB_INIT
         self.myid = comm.rank
-        self._refs = {} # References to matrices
+        self._refs = {}  # References to matrices
 
     def __enter__(self):
         return self
@@ -88,8 +90,7 @@ class _MumpsBaseContext(object):
         n = A.shape[0]
         assert A.shape == (n, n), "Expected a square matrix."
         self.set_shape(n)
-        self.set_centralized_assembled(A.row+1, A.col+1, A.data)
-
+        self.set_centralized_assembled(A.row + 1, A.col + 1, A.data)
 
     ####################################################################
     # Centralized (the rank 0 process supplies the entire matrix)
@@ -124,7 +125,6 @@ class _MumpsBaseContext(object):
         self._refs.update(a=a)
         self.id.a = self.cast_array(a)
 
-
     ####################################################################
     # Distributed (each process enters some portion of the matrix)
     ####################################################################
@@ -154,10 +154,9 @@ class _MumpsBaseContext(object):
 
         Distributed assembled matrices require setting icntl(18) != 0.
         """
-        assert a_loc.size == self._refs['irn_loc'].size
+        assert a_loc.size == self._refs["irn_loc"].size
         self._refs.update(a_loc=a_loc)
         self.id.a_loc = self.cast_array(a_loc)
-
 
     ####################################################################
     # Right hand side entry
@@ -172,56 +171,64 @@ class _MumpsBaseContext(object):
     def set_icntl(self, idx, val):
         """Set an icntl value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         self.id.icntl[idx - 1] = val
 
     def get_icntl(self, idx):
         """Get an icntl value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         return self.id.icntl[idx - 1]
 
     def set_cntl(self, idx, val):
         """Set a cntl value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         self.id.cntl[idx - 1] = val
 
     def get_cntl(self, idx):
         """Get a cntl value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         return self.id.cntl[idx - 1]
 
     def get_info(self, idx):
         """Get an info value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         return self.id.info[idx - 1]
 
     def get_infog(self, idx):
         """Get an infog value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         return self.id.infog[idx - 1]
 
     def get_rinfo(self, idx):
         """Get a rinfo value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         return self.id.rinfo[idx - 1]
 
     def get_rinfog(self, idx):
         """Get a rinfog value.
 
-        The index should be provided as a 1-based number (as in the MUMPS user manual).
+        The index should be provided as a 1-based number
+        (as in the MUMPS user manual).
         """
         return self.id.rinfog[idx - 1]
 
@@ -231,9 +238,9 @@ class _MumpsBaseContext(object):
 
     def set_silent(self):
         """Silence most messages."""
-        self.set_icntl(1, -1) # output stream for error msgs
-        self.set_icntl(2, -1) # otuput stream for diagnostic msgs
-        self.set_icntl(3, -1) # output stream for global info
+        self.set_icntl(1, -1)  # output stream for error msgs
+        self.set_icntl(2, -1)  # otuput stream for diagnostic msgs
+        self.set_icntl(3, -1)  # output stream for global info
         self.set_icntl(4, 0)  # level of printing for errors
 
     @property
@@ -243,15 +250,14 @@ class _MumpsBaseContext(object):
     def destroy(self):
         """Delete the MUMPS context and release all array references."""
         if self.id is not None and self._mumps_c is not None:
-            self.id.job = -2 # JOB_END
+            self.id.job = -2  # JOB_END
             self._mumps_c(self.id)
         self.id = None
         self._refs = None
 
     def __del__(self):
         if not self.destroyed:
-            warnings.warn("undestroyed %s" % self.__class__.__name__,
-                          RuntimeWarning)
+            warnings.warn("undestroyed %s" % self.__class__.__name__, RuntimeWarning)
         self.destroy()
 
     def mumps(self):
@@ -280,19 +286,23 @@ class _MumpsBaseContext(object):
         self.set_job(job)
         self.mumps()
 
+
 class DMumpsContext(_MumpsBaseContext):
 
     cast_array = staticmethod(_dmumps.cast_array)
     _mumps_c = staticmethod(_dmumps.dmumps_c)
     _MUMPS_STRUC_C = staticmethod(_dmumps.DMUMPS_STRUC_C)
 
+
 try:
     import mumps._zmumps
+
     class ZMumpsContext(_MumpsBaseContext):
 
         cast_array = staticmethod(_zmumps.cast_array)
         _mumps_c = staticmethod(_zmumps.zmumps_c)
         _MUMPS_STRUC_C = staticmethod(_zmumps.ZMUMPS_STRUC_C)
+
 except ImportError:  # no complex number support
     pass
 
@@ -300,16 +310,17 @@ except ImportError:  # no complex number support
 # Functions
 ########################################################################
 
+
 def spsolve(A, b, comm=None):
     """Sparse solve A\b."""
 
     # assert A.dtype == 'd' and b.dtype == 'd', "Only double precision supported."
-    if A.dtype == 'd' and b.dtype == 'd':
+    if A.dtype == "d" and b.dtype == "d":
         context = DMumpsContext
-    elif A.dtype == 'D' and b.dtype == 'D':
+    elif A.dtype == "D" and b.dtype == "D":
         context = ZMumpsContext
     else:
-        raise ValueError('Unsupported data types.')
+        raise ValueError("Unsupported data types.")
 
     with context(par=1, sym=0, comm=comm) as ctx:
         if ctx.myid == 0:
