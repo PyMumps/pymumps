@@ -26,15 +26,35 @@ def test_solve(matrix, rhs):
     (n, a, irn, jcn) = matrix
 
     # Create the MUMPS context and set the array and right hand side
-    ctx = mumps.DMumpsContext(sym=0, par=1)
-    if ctx.myid == 0:
-        ctx.set_shape(n)
-        ctx.set_centralized_assembled(irn, jcn, a)
-        x = b.copy()
-        ctx.set_rhs(x)
+    with mumps.DMumpsContext(sym=0, par=1) as ctx:
+        if ctx.myid == 0:
+            ctx.set_shape(n)
+            ctx.set_centralized_assembled(irn, jcn, a)
+            x = b.copy()
+            ctx.set_rhs(x)
 
-    ctx.set_silent()  # Turn off verbose output
+        ctx.set_silent()  # Turn off verbose output
 
-    ctx.run(job=6)  # Analysis + Factorization + Solve
+        ctx.run(job=6)  # Analysis + Factorization + Solve
 
-    ctx.destroy()  # Free memory
+        assert np.allclose(x, np.arange(1, 6))
+
+
+def test_solve_complex(matrix, rhs):
+    b = rhs + rhs * 2j
+    (n, a, irn, jcn) = matrix
+    a = a.astype("D")
+
+    # Create the MUMPS context and set the array and right hand side
+    with mumps.ZMumpsContext(sym=0, par=1) as ctx:
+        if ctx.myid == 0:
+            ctx.set_shape(n)
+            ctx.set_centralized_assembled(irn, jcn, a)
+            x = b.copy()
+            ctx.set_rhs(x)
+
+        ctx.set_silent() # Turn off verbose output
+
+        ctx.run(job=6) # Analysis + Factorization + Solve
+
+        assert np.allclose(x, np.arange(1, 6) + np.arange(1, 6) * 2j)
