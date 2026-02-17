@@ -302,34 +302,24 @@ def spsolve(A, b, comm=None):
 
     # assert A.dtype == 'd' and b.dtype == 'd', "Only double precision supported."
     if A.dtype == 'd' and b.dtype == 'd':
-        with DMumpsContext(par=1, sym=0, comm=comm) as ctx:
-            if ctx.myid == 0:
-                # Set the sparse matrix -- only necessary on
-                ctx.set_centralized_sparse(A.tocoo())
-                x = b.copy()
-                ctx.set_rhs(x)
+        context = DMumpsContext
+    elif A.dtype == 'D' or b.dtype == 'D':
+        context = ZMumpsContext
+    else:
+        raise ValueError('Unsupported data types.')
 
-            # Silence most messages
-            ctx.set_silent()
+    with context(par=1, sym=0, comm=comm) as ctx:
+        if ctx.myid == 0:
+            # Set the sparse matrix -- only necessary on
+            ctx.set_centralized_sparse(A.tocoo())
+            x = b.copy()
+            ctx.set_rhs(x)
 
-            # Analysis + Factorization + Solve
-            ctx.run(job=6)
+        # Silence most messages
+        ctx.set_silent()
 
-            if ctx.myid == 0:
-                return x
-    elif A.dtype == 'z' or b.dtype == 'z':
-        with ZMumpsContext(par=1, sym=0, comm=comm) as ctx:
-            if ctx.myid == 0:
-                # Set the sparse matrix -- only necessary on
-                ctx.set_centralized_sparse(A.tocoo())
-                x = b.copy()
-                ctx.set_rhs(x)
+        # Analysis + Factorization + Solve
+        ctx.run(job=6)
 
-            # Silence most messages
-            ctx.set_silent()
-
-            # Analysis + Factorization + Solve
-            ctx.run(job=6)
-
-            if ctx.myid == 0:
-                return x
+        if ctx.myid == 0:
+            return x
