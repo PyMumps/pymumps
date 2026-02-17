@@ -24,10 +24,14 @@ classifiers = [
 ]
 dependencies = [
   "mpi4py",
+  "numpy",
 ]
 
 [dependency-groups]
-dev = ["scipy"]
+dev = [
+  "pytest",
+  "scipy",
+]
 
 [project.urls]
 homepage = "http://github.com/pymumps/pymumps"
