@@ -20,15 +20,36 @@ find_library(DMUMPS_LIB
     REQUIRED
 )
 
-add_custom_command(
-  OUTPUT _dmumps.c
-  COMMAND Python::Interpreter -m cython
-          "${CMAKE_CURRENT_SOURCE_DIR}/mumps/_dmumps.pyx" --output-file _dmumps.c
-  DEPENDS mumps/_dmumps.pyx
-  VERBATIM)
+find_library(ZMUMPS_LIB 
+    NAMES zmumps
+    HINTS ${MUMPS_ROOT}/lib
+    OPTIONAL
+)
 
-python_add_library(_dmumps MODULE _dmumps.c WITH_SOABI)
-target_include_directories(_dmumps PRIVATE ${MUMPS_INCLUDE_DIR})
-target_link_libraries(_dmumps PRIVATE ${DMUMPS_LIB})
+if(DMUMPS_LIB)
+    add_custom_command(
+      OUTPUT _dmumps.c
+      COMMAND Python::Interpreter -m cython
+              "${CMAKE_CURRENT_SOURCE_DIR}/mumps/_dmumps.pyx" --output-file _dmumps.c
+      DEPENDS mumps/_dmumps.pyx
+      VERBATIM)
 
-install(TARGETS _dmumps DESTINATION mumps)
+    python_add_library(_dmumps MODULE _dmumps.c WITH_SOABI)
+    target_include_directories(_dmumps PRIVATE ${MUMPS_INCLUDE_DIR})
+    target_link_libraries(_dmumps PRIVATE ${DMUMPS_LIB})
+    install(TARGETS _dmumps DESTINATION mumps)
+endif()
+
+if(ZMUMPS_LIB)
+    add_custom_command(
+      OUTPUT _zmumps.c
+      COMMAND Python::Interpreter -m cython
+              "${CMAKE_CURRENT_SOURCE_DIR}/mumps/_zmumps.pyx" --output-file _zmumps.c
+      DEPENDS mumps/_dmumps.pyx
+      VERBATIM)
+
+    python_add_library(_zmumps MODULE _zmumps.c WITH_SOABI)
+    target_include_directories(_zmumps PRIVATE ${MUMPS_INCLUDE_DIR})
+    target_link_libraries(_zmumps PRIVATE ${ZMUMPS_LIB})
+    install(TARGETS _zmumps DESTINATION mumps)
+endif()
