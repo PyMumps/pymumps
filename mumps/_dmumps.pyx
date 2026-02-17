@@ -335,5 +335,7 @@ def cast_array(arr):
         return arr.__array_interface__['data'][0]
     elif dtype == 'd':
         return arr.__array_interface__['data'][0]
+    elif dtype == 'D':
+        return arr.__array_interface__['data'][0]
     else:
         raise ValueError("Unknown dtype %r" % dtype)
