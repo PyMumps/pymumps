@@ -37,6 +37,11 @@ setup(
             sources=['mumps/_dmumps.pyx'],
             libraries=['dmumps', 'mumps_common'],
         ),
+        Extension(
+            'mumps._zmumps',
+            sources=['mumps/_zmumps.pyx'],
+            libraries=['zmumps', 'mumps_common'],
+        ),
     ],
     install_requires=['mpi4py'],
     classifiers=[

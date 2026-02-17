@@ -1,8 +1,10 @@
 import warnings
 import mumps._dmumps
+import mumps._zmumps
 
 __all__ = [
     'DMumpsContext',
+    'ZMumpsContext',
     'spsolve',
     ]
 
@@ -285,6 +287,11 @@ class DMumpsContext(_MumpsBaseContext):
     _mumps_c = staticmethod(_dmumps.dmumps_c)
     _MUMPS_STRUC_C = staticmethod(_dmumps.DMUMPS_STRUC_C)
 
+class ZMumpsContext(_MumpsBaseContext):
+
+    cast_array = staticmethod(_zmumps.cast_array)
+    _mumps_c = staticmethod(_zmumps.zmumps_c)
+    _MUMPS_STRUC_C = staticmethod(_zmumps.ZMUMPS_STRUC_C)
 
 ########################################################################
 # Functions
@@ -293,8 +300,15 @@ class DMumpsContext(_MumpsBaseContext):
 def spsolve(A, b, comm=None):
     """Sparse solve A\b."""
 
-    assert A.dtype == 'd' and b.dtype == 'd', "Only double precision supported."
-    with DMumpsContext(par=1, sym=0, comm=comm) as ctx:
+    # assert A.dtype == 'd' and b.dtype == 'd', "Only double precision supported."
+    if A.dtype == 'd' and b.dtype == 'd':
+        context = DMumpsContext
+    elif A.dtype == 'D' or b.dtype == 'D':
+        context = ZMumpsContext
+    else:
+        raise ValueError('Unsupported data types.')
+
+    with context(par=1, sym=0, comm=comm) as ctx:
         if ctx.myid == 0:
             # Set the sparse matrix -- only necessary on
             ctx.set_centralized_sparse(A.tocoo())
