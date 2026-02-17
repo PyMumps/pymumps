@@ -26,6 +26,9 @@ dependencies = [
   "mpi4py",
 ]
 
+[dependency-groups]
+dev = ["scipy"]
+
 [project.urls]
 homepage = "http://github.com/pymumps/pymumps"
 source = "http://github.com/pymumps/pymumps"
