@@ -29,6 +29,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+  "black",
   "pytest",
   "scipy",
 ]
