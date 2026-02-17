@@ -5,7 +5,7 @@ __all__ = ['ZMUMPS_STRUC_C', 'zmumps_c', 'cast_array']
 ########################################################################
 
 MUMPS_INT_DTYPE = 'i'
-ZMUMPS_REAL_DTYPE = 'D'        # NumPy type code for complex128
+ZMUMPS_REAL_DTYPE = 'd'
 ZMUMPS_COMPLEX_DTYPE = 'D'
 
 from libc.string cimport strncpy
