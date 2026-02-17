@@ -19,16 +19,13 @@ pip install pymumps
 ```
 
 Custom build flags, e.g. to specify the MUMPS installation location,
-can be specified using `--global-option`:
+can be specified using `-C`:
 
 ```
-pip install pymumps --global-option="build_ext" \
+pip install -v pymumps --global-option="build_ext" \
     --global-option="-I$MUMPS_PREFIX/include" \
     --global-option="-L$MUMPS_PREFIX/lib" \
 ```
-
-Use `python setup.py build_ext --help` to get a list of all allowed
-options.
 
 There is also conda recipe:
 

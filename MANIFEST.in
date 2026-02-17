@@ -1,3 +1,0 @@
-include README.md COPYING
-recursive-include mumps *.pyx
-recursive-include examples *.py

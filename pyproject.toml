@@ -1,3 +1,39 @@
 [build-system]
-requires = ["setuptools", "wheel", "cython"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core", "cython"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "PyMUMPS"
+version = "0.4.0"
+description = "Python bindings for MUMPS, a parallel sparse direct solver"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "BSD-3-Clause"
+authors = [
+  {name = "Bradley M. Froehle", email = "brad.froehle@gmail.com"},
+  {name = "Stephan Rave", email = "stephan.rave@uni-muenster.de"},
+]
+maintainers = [
+  {name = "Stephan Rave", email = "stephan.rave@uni-muenster.de"},
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+  "mpi4py",
+]
+
+[project.urls]
+homepage = "http://github.com/pymumps/pymumps"
+source = "http://github.com/pymumps/pymumps"
+tracker = "http://github.com/pymumps/pymumps/issues"
+
+[tool.scikit-build]
+sdist.exclude = [".gitignore", ".gitattributes"]
+
+[tool.scikit-build.wheel]
+exclude = ["**.pyx"]
+packages = ["mumps"]
