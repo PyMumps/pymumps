@@ -44,9 +44,15 @@ jobs:
           environment-name: pymumps
           init-shell: bash
       - name: install pymumps
+        if: runner.os != 'Windows'
         shell: bash -el {0}
         run: |
           python -m pip install -v --group=dev -Cbuild.verbose=true -Ccmake.define.MUMPS_ROOT=${CONDA_PREFIX} -e .
+      - name: install pymumps
+        if: runner.os == 'Windows'
+        shell: bash -el {0}
+        run: |
+          python -m pip install -v --group=dev -Cbuild.verbose=true -Ccmake.define.MUMPS_ROOT=${CONDA_PREFIX}/Library -e .
       - name: Run pytest
         shell: bash -el {0}
         run: |
