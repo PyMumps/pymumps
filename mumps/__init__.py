@@ -280,17 +280,24 @@ class _MumpsBaseContext(object):
         self.set_job(job)
         self.mumps()
 
-class DMumpsContext(_MumpsBaseContext):
+    @staticmethod
+    def cast_array(arr):
+        """Convert numpy array to corresponding cffi pointer.
 
-    cast_array = staticmethod(_dmumps.cast_array)
+        The user is entirely responsible for ensuring the data is contiguous
+        and for holding a reference to the underlying array.
+        """
+        if arr.dtype not in {'i', 'f', 'F', 'd', 'D'}:
+            raise ValueError(f'Unknown dtype {arr.dtype}')
+        return arr.__array_interface__['data'][0]
+
+class DMumpsContext(_MumpsBaseContext):
     _mumps_c = staticmethod(_dmumps.dmumps_c)
     _MUMPS_STRUC_C = staticmethod(_dmumps.DMUMPS_STRUC_C)
 
 try:
     import mumps._zmumps
     class ZMumpsContext(_MumpsBaseContext):
-
-        cast_array = staticmethod(_zmumps.cast_array)
         _mumps_c = staticmethod(_zmumps.zmumps_c)
         _MUMPS_STRUC_C = staticmethod(_zmumps.ZMUMPS_STRUC_C)
 except ImportError:  # no complex number support

@@ -1,4 +1,4 @@
-__all__ = ['ZMUMPS_STRUC_C', 'zmumps_c', 'cast_array']
+__all__ = ['ZMUMPS_STRUC_C', 'zmumps_c']
 
 ########################################################################
 # libzmumps / zmumps_c.h wrappers (using Cython)
@@ -332,17 +332,3 @@ def zmumps_c(ZMUMPS_STRUC_C s not None):
         c_zmumps_c(&s.ob)
 
 __version__ = (<bytes> MUMPS_VERSION).decode('ascii')
-
-########################################################################
-# Casting routines.
-########################################################################
-
-def cast_array(arr):
-    """Convert numpy array to corresponding cffi pointer.
-
-    The user is entirely responsible for ensuring the data is contiguous
-    and for holding a reference to the underlying array.
-    """
-    if not arr.dtype in {'i', 'f', 'F', 'd', 'D'}:
-        raise ValueError(f'Unknown dtype {arr.dtype}')
-    return arr.__array_interface__['data'][0]

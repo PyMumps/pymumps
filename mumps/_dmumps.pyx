@@ -1,4 +1,4 @@
-__all__ = ['DMUMPS_STRUC_C', 'dmumps_c', 'cast_array']
+__all__ = ['DMUMPS_STRUC_C', 'dmumps_c']
 
 ########################################################################
 # libdmumps / dmumps_c.h wrappers (using Cython)
@@ -332,17 +332,3 @@ def dmumps_c(DMUMPS_STRUC_C s not None):
         c_dmumps_c(&s.ob)
 
 __version__ = (<bytes> MUMPS_VERSION).decode('ascii')
-
-########################################################################
-# Casting routines.
-########################################################################
-
-def cast_array(arr):
-    """Convert numpy array to corresponding cffi pointer.
-
-    The user is entirely responsible for ensuring the data is contiguous
-    and for holding a reference to the underlying array.
-    """
-    if not arr.dtype in {'i', 'f', 'F', 'd', 'D'}:
-        raise ValueError(f'Unknown dtype {arr.dtype}')
-    return arr.__array_interface__['data'][0]
