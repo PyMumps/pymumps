@@ -2,4 +2,5 @@ build
 dist
 *.py[oc]
 *~
+mumps/_?mumps.pyx
 __pycache__
