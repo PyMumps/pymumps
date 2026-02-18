@@ -4,10 +4,6 @@ __all__ = ['ZMUMPS_STRUC_C', 'zmumps_c', 'cast_array']
 # libzmumps / zmumps_c.h wrappers (using Cython)
 ########################################################################
 
-MUMPS_INT_DTYPE = 'i'
-ZMUMPS_REAL_DTYPE = 'd'
-ZMUMPS_COMPLEX_DTYPE = 'D'
-
 from libc.string cimport strncpy
 
 cdef extern from "zmumps_c.h":
