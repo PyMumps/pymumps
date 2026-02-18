@@ -72,13 +72,20 @@ cdef extern from "{x}mumps_c.h":
         {X}MUMPS_REAL    *rowsca
 
         # RHS, solution, ouptput data and statistics
-        {X}MUMPS_COMPLEX *rhs, *redrhs, *rhs_sparse, *sol_loc
-        MUMPS_INT        *irhs_sparse, *irhs_ptr, *isol_loc
+        {X}MUMPS_COMPLEX *rhs
+        {X}MUMPS_COMPLEX *redrhs
+        {X}MUMPS_COMPLEX *rhs_sparse
+        {X}MUMPS_COMPLEX *sol_loc
+        MUMPS_INT        *irhs_sparse
+        MUMPS_INT        *irhs_ptr
+        MUMPS_INT        *isol_loc
         MUMPS_INT        nrhs, lrhs, lredrhs, nz_rhs, lsol_loc
         MUMPS_INT        schur_mloc, schur_nloc, schur_lld
         MUMPS_INT        mblock, nblock, nprow, npcol
-        MUMPS_INT        info[40],infog[40]
-        {X}MUMPS_REAL    rinfo[20], rinfog[20]
+        MUMPS_INT        info[40]
+        MUMPS_INT        infog[40]
+        {X}MUMPS_REAL    rinfo[20]
+        {X}MUMPS_REAL    rinfog[20]
 
         # Null space
         MUMPS_INT      deficiency
