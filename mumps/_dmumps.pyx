@@ -9,8 +9,25 @@ from libc.string cimport strncpy
 cdef extern from "dmumps_c.h":
 
     ctypedef int MUMPS_INT
+
+    ctypedef float SMUMPS_COMPLEX
+    ctypedef float SMUMPS_REAL
+
     ctypedef double DMUMPS_COMPLEX
     ctypedef double DMUMPS_REAL
+
+    ctypedef struct mumps_complex:
+        float r
+        float i
+    ctypedef struct mumps_double_complex:
+        double r
+        double i
+
+    ctypedef mumps_complex CMUMPS_COMPLEX
+    ctypedef float CMUMPS_REAL
+
+    ctypedef mumps_double_complex ZMUMPS_COMPLEX
+    ctypedef double ZMUMPS_REAL
 
     char* MUMPS_VERSION
 
