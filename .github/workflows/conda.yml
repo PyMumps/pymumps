@@ -1,0 +1,41 @@
+---
+name: Conda Tests
+on:
+  push:
+    branches: 
+      - master
+      - main
+  pull_request:
+jobs:
+  run tests:
+    name: ${{ matrix.os }} - Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - macos-15
+          - windows-2022
+        python:
+          - '3.10'
+          - '3.13'
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup-micromamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          create-args: >-
+            python=${{ inputs.python }}
+            mumps-mpi
+            mumps-include
+            mpi4py
+          environment-name: pymumps
+          init-shell: bash
+      - name: install pymumps
+        shell: bash -el {0}
+        run: |
+          pyton -m pip install --group=dev -e .
+      - name: Run pytest
+        shell: bash -el {0}
+        run: |
+          python -m pytest
