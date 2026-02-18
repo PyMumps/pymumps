@@ -22,9 +22,10 @@ Custom build flags, e.g. to specify the MUMPS installation location,
 can be specified using `-C`:
 
 ```
-pip install -v pymumps --global-option="build_ext" \
-    --global-option="-I$MUMPS_PREFIX/include" \
-    --global-option="-L$MUMPS_PREFIX/lib" \
+pip install -v \
+    -Cbuild.verbose=true \
+    -Ccmake.define.MUMPS_ROOT=<PATH_OF_MUMPS_INSTALLATION> \
+    pymumps
 ```
 
 There is also conda recipe:
