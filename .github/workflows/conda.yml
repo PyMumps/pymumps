@@ -34,7 +34,7 @@ jobs:
       - name: install pymumps
         shell: bash -el {0}
         run: |
-          pyton -m pip install --group=dev -e .
+          python -m pip install --group=dev -e .
       - name: Run pytest
         shell: bash -el {0}
         run: |
