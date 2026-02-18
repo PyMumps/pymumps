@@ -15,7 +15,7 @@ find_path(MUMPS_INCLUDE_DIR
     REQUIRED)
 
 find_library(SMUMPS_LIB 
-    NAMES smumps
+    NAMES coinmumps smumps
     HINTS ${MUMPS_ROOT}/lib
     OPTIONAL
 )
