@@ -25,7 +25,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           create-args: >-
-            python=${{ inputs.python }}
+            python=${{ matrix.python }}
             mumps-mpi      # [osx or linux]
             mumps-include  # [osx or linux]
             mumps-seq      # [win]
