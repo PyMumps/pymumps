@@ -4,7 +4,10 @@ __all__ = [
     'DMumpsContext',
     'ZMumpsContext',
     'spsolve',
+    '__version__',
     ]
+
+__version__ = '0.4.0'
 
 ########################################################################
 # Classes
