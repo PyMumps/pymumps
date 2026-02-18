@@ -1,5 +1,4 @@
 import warnings
-import mumps._dmumps
 
 __all__ = [
     'DMumpsContext',
@@ -289,16 +288,36 @@ class _MumpsBaseContext(object):
         """
         return arr.__array_interface__['data'][0]
 
-class DMumpsContext(_MumpsBaseContext):
-    _mumps_c = staticmethod(_dmumps.dmumps_c)
-    _MUMPS_STRUC_C = staticmethod(_dmumps.DMUMPS_STRUC_C)
+try:
+    import mumps._smumps
+    class SMumpsContext(_MumpsBaseContext):
+        _mumps_c = staticmethod(mumps._smumps.smumps_c)
+        _MUMPS_STRUC_C = staticmethod(mumps._smumps.SMUMPS_STRUC_C)
+except ImportError:
+    pass
+
+try:
+    import mumps._cmumps
+    class CMumpsContext(_MumpsBaseContext):
+        _mumps_c = staticmethod(mumps._cmumps.cmumps_c)
+        _MUMPS_STRUC_C = staticmethod(mumps._cmumps.CMUMPS_STRUC_C)
+except ImportError:
+    pass
+
+try:
+    import mumps._dmumps
+    class DMumpsContext(_MumpsBaseContext):
+        _mumps_c = staticmethod(mumps._dmumps.dmumps_c)
+        _MUMPS_STRUC_C = staticmethod(mumps._dmumps.DMUMPS_STRUC_C)
+except ImportError:
+    pass
 
 try:
     import mumps._zmumps
     class ZMumpsContext(_MumpsBaseContext):
-        _mumps_c = staticmethod(_zmumps.zmumps_c)
-        _MUMPS_STRUC_C = staticmethod(_zmumps.ZMUMPS_STRUC_C)
-except ImportError:  # no complex number support
+        _mumps_c = staticmethod(mumps._zmumps.zmumps_c)
+        _MUMPS_STRUC_C = staticmethod(mumps._zmumps.ZMUMPS_STRUC_C)
+except ImportError:
     pass
 
 ########################################################################
@@ -308,8 +327,11 @@ except ImportError:  # no complex number support
 def spsolve(A, b, comm=None):
     """Sparse solve A\b."""
 
-    # assert A.dtype == 'd' and b.dtype == 'd', "Only double precision supported."
-    if A.dtype == 'd' and b.dtype == 'd':
+    if A.dtype == 'f' and b.dtype == 'd':
+        context = SMumpsContext
+    elif A.dtype == 'F' and b.dtype == 'F':
+        context = CMumpsContext
+    elif A.dtype == 'd' and b.dtype == 'd':
         context = DMumpsContext
     elif A.dtype == 'D' and b.dtype == 'D':
         context = ZMumpsContext
