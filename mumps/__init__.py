@@ -327,7 +327,7 @@ except ImportError:
 def spsolve(A, b, comm=None):
     """Sparse solve A\b."""
 
-    if A.dtype == 'f' and b.dtype == 'd':
+    if A.dtype == 'f' and b.dtype == 'f':
         context = SMumpsContext
     elif A.dtype == 'F' and b.dtype == 'F':
         context = CMumpsContext
