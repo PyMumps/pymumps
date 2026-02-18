@@ -7,7 +7,7 @@ on:
       - main
   pull_request:
 jobs:
-  run tests:
+  run_tests:
     name: ${{ matrix.os }} - Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
