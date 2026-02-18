@@ -343,12 +343,6 @@ def cast_array(arr):
     The user is entirely responsible for ensuring the data is contiguous
     and for holding a reference to the underlying array.
     """
-    dtype = arr.dtype
-    if dtype == 'i':
-        return arr.__array_interface__['data'][0]
-    elif dtype == 'd':
-        return arr.__array_interface__['data'][0]
-    elif dtype == 'D':
-        return arr.__array_interface__['data'][0]
-    else:
-        raise ValueError("Unknown dtype %r" % dtype)
+    if not arr.dtype in {'i', 'f', 'F', 'd', 'D'}:
+        raise ValueError(f'Unknown dtype {arr.dtype}')
+    return arr.__array_interface__['data'][0]
