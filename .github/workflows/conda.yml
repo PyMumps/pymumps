@@ -23,13 +23,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: setup-micromamba
+        if: runner.os != 'Windows'
         uses: mamba-org/setup-micromamba@v2
         with:
           create-args: >-
             python=${{ matrix.python }}
-            mumps-mpi      # [osx or linux]
-            mumps-include  # [osx or linux]
-            mumps-seq      # [win]
+            mumps-mpi
+            mumps-include
+            mpi4py
+          environment-name: pymumps
+          init-shell: bash
+      - name: setup-micromamba
+        if: runner.os == 'Windows'
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          create-args: >-
+            python=${{ matrix.python }}
+            mumps-seq
             mpi4py
           environment-name: pymumps
           init-shell: bash
