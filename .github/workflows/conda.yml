@@ -34,7 +34,7 @@ jobs:
       - name: install pymumps
         shell: bash -el {0}
         run: |
-          python -m pip install --group=dev -e .
+          python -m pip install --group=dev -Cbuild.verbose=true -Ccmake.define.MUMPS_ROOT=${CONDA_PREFIX} -e .
       - name: Run pytest
         shell: bash -el {0}
         run: |
