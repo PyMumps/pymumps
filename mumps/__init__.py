@@ -287,8 +287,6 @@ class _MumpsBaseContext(object):
         The user is entirely responsible for ensuring the data is contiguous
         and for holding a reference to the underlying array.
         """
-        if arr.dtype not in {'i', 'f', 'F', 'd', 'D'}:
-            raise ValueError(f'Unknown dtype {arr.dtype}')
         return arr.__array_interface__['data'][0]
 
 class DMumpsContext(_MumpsBaseContext):
