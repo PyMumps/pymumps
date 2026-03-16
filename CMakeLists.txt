@@ -14,6 +14,14 @@ find_path(MUMPS_INCLUDE_DIR
     PATH_SUFFIXES include include/coin-or/mumps
     REQUIRED)
 
+file(STRINGS "${MUMPS_INCLUDE_DIR}/dmumps_c.h" MUMPS_VERSION_DEF
+     REGEX "#define[ \t]+MUMPS_VERSION")
+
+string(REGEX REPLACE ".*MUMPS_VERSION[ \t]+\"([0-9.]+)\".*" "\\1"
+       MUMPS_VERSION "${MUMPS_VERSION_DEF}")
+
+message(STATUS "Found MUMPS headers: ${MUMPS_INCLUDE_DIR}/dmumps_c.h (found version \"${MUMPS_VERSION}\")")
+
 find_library(SMUMPS_LIB 
     NAMES coinmumps smumps
     HINTS ${MUMPS_ROOT}/lib
@@ -41,7 +49,7 @@ find_library(ZMUMPS_LIB
 add_custom_command(
   OUTPUT mumps/_smumps.pyx mumps/_dmumps.pyx mumps/_cmumps.pyx mumps/_zmumps.pyx
   COMMAND Python::Interpreter
-          "${CMAKE_CURRENT_SOURCE_DIR}/generate_wrappers.py"
+          "${CMAKE_CURRENT_SOURCE_DIR}/generate_wrappers.py" ${MUMPS_VERSION}
   VERBATIM)
 
 if(SMUMPS_LIB)
