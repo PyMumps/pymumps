@@ -49,7 +49,7 @@ find_library(ZMUMPS_LIB
 add_custom_command(
   OUTPUT mumps/_smumps.pyx mumps/_dmumps.pyx mumps/_cmumps.pyx mumps/_zmumps.pyx
   COMMAND Python::Interpreter
-          "${CMAKE_CURRENT_SOURCE_DIR}/generate_wrappers.py"
+          "${CMAKE_CURRENT_SOURCE_DIR}/generate_wrappers.py" ${MUMPS_VERSION}
   VERBATIM)
 
 if(SMUMPS_LIB)
