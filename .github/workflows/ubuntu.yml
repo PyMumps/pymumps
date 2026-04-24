@@ -5,13 +5,14 @@ on:
     branches: 
       - master
       - main
+      - sparse
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  run_tests:
+  run_tests_python:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -36,7 +37,270 @@ jobs:
         python -m build
     - name: Install package
       run: |
-        pip install --group=dev -e .
+        # pip install --group=dev -e .
+        pip install .[test]
     - name: Run tests
       run: |
         python -m pytest
+
+  run_tests_mumps:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mumps-version: ["5.2.0", "5.2.1", "5.3.5", "5.4.1", "5.5.0", "5.5.1", "5.6.0", "5.6.1", "5.7.0", "5.7.1", "5.7.2", "5.7.3", "5.8.0", "5.8.1", "5.8.2"]
+    # too old ["5.0.0", "5.1.2"]
+    steps:
+    - name: Install the dependencies
+      run: |              
+        # install ubuntu package
+        sudo apt-get update
+        sudo apt-get install -yy \
+          build-essential \
+          wget \
+          cmake \
+          gcc \
+          g++ \
+          gfortran \
+          libblas-dev \
+          liblapack-dev \
+          libopenmpi-dev
+        
+    - uses: actions/checkout@main
+    - name: Set up Python 3.13
+      uses: actions/setup-python@main
+      with:
+        python-version: 3.13
+
+    - name: Set up environment variables
+      run: |
+        # get python path
+        BASE_DATA_PYTHON=$(python -c "from sysconfig import get_paths;print(get_paths()['data'])")
+        echo "TMP_FOLDER_MUMPS_SRC=$TMP_FOLDER_MUMPS_SRC" >> $GITHUB_ENV
+        echo "BASE_DATA_PYTHON=$BASE_DATA_PYTHON" >> $GITHUB_ENV
+        echo "Python data path: ${BASE_DATA_PYTHON}"
+    - name: Install MUMPS ${{ matrix.mumps-version }}
+      run: |
+        # set a temp directory for mumps build and venv
+        TMP_FOLDER_MUMPS_SRC=$(mktemp -d)
+        # VENV_DIR=$(mktemp -d)
+        # python -m venv ${VENV_DIR}
+        # get cwd
+        cwd=$(pwd)
+        echo $cwd
+
+        # install MUMPS from source
+        git clone https://github.com/scivision/mumps.git $TMP_FOLDER_MUMPS_SRC
+        cd $TMP_FOLDER_MUMPS_SRC 
+        cmake -Bbuild \
+          -DBUILD_SINGLE=on \
+          -DBUILD_DOUBLE=on \
+          -DBUILD_COMPLEX=on \
+          -DBUILD_COMPLEX16=on \
+          -DMUMPS_parallel=no \
+          -DBUILD_SHARED_LIBS=on  \
+          -DMUMPS_UPSTREAM_VERSION=${{ matrix.mumps-version }} \
+          --install-prefix=${BASE_DATA_PYTHON}
+        cmake --build build -j2
+        cmake --install build  
+        #
+        cd $cwd
+    - name: Build package
+      run: |
+        echo "Python data path: ${BASE_DATA_PYTHON}"
+        # set LD_LIBRARY_PATH to find the MUMPS libraries
+        export LIBRARY_PATH=${BASE_DATA_PYTHON}/lib
+        export C_INCLUDE_PATH=${BASE_DATA_PYTHON}/include
+        # export
+
+        # update pip
+        python -m pip install --upgrade pip
+        pip install build
+        python -m build
+    - name: Install package
+      run: |
+        # set LD_LIBRARY_PATH to find the MUMPS libraries
+        # export LIBRARY_PATH=${BASE_DATA_PYTHON}/lib
+        # export C_INCLUDE_PATH=${BASE_DATA_PYTHON}/include
+        # pip install .[test]
+        pip install -v -Ccmake.define.MUMPS_ROOT=${BASE_DATA_PYTHON}/ -e .[test]
+    - name: Run tests
+      run: |
+        python -m pytest
+
+  run_tests_mumps-no-complex16-double:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mumps-version: ["5.8.2"] 
+    steps:
+    - name: Install the dependencies
+      run: |              
+        # install ubuntu package
+        sudo apt-get update
+        sudo apt-get install -yy \
+          build-essential \
+          wget \
+          cmake \
+          gcc \
+          g++ \
+          gfortran \
+          libblas-dev \
+          liblapack-dev \
+          libopenmpi-dev
+    - uses: actions/checkout@main
+    - name: Set up Python 3.13
+      uses: actions/setup-python@main
+      with:
+        python-version: 3.13
+
+    - name: Set up environment variables
+      run: |
+        # get python path
+        BASE_DATA_PYTHON=$(python -c "from sysconfig import get_paths;print(get_paths()['data'])")
+        echo "TMP_FOLDER_MUMPS_SRC=$TMP_FOLDER_MUMPS_SRC" >> $GITHUB_ENV
+        echo "BASE_DATA_PYTHON=$BASE_DATA_PYTHON" >> $GITHUB_ENV
+        echo "Python data path: ${BASE_DATA_PYTHON}"
+    - name: Install MUMPS ${{ matrix.mumps-version }}
+      run: |
+        # set a temp directory for mumps build and venv
+        TMP_FOLDER_MUMPS_SRC=$(mktemp -d)
+        # VENV_DIR=$(mktemp -d)
+        # python -m venv ${VENV_DIR}
+        # get cwd
+        cwd=$(pwd)
+        echo $cwd
+
+        # install MUMPS from source with not all number types to test the degraded behavior of the package when some MUMPS libraries are missing
+        git clone https://github.com/scivision/mumps.git $TMP_FOLDER_MUMPS_SRC
+        cd $TMP_FOLDER_MUMPS_SRC 
+         # build sequential version of MUMPS without double and complex16 to test the degraded behavior of the package when some MUMPS libraries are missing
+        cmake -Bbuild \
+          -DBUILD_SINGLE=on \
+          -DBUILD_DOUBLE=no \
+          -DBUILD_COMPLEX=on \
+          -DBUILD_COMPLEX16=no \
+          -DMUMPS_parallel=no \
+          -DBUILD_SHARED_LIBS=on  \
+          -DMUMPS_UPSTREAM_VERSION=${{ matrix.mumps-version }} \
+          --install-prefix=${BASE_DATA_PYTHON}
+        cmake --build build -j2
+        cmake --install build  
+        #
+        cd $cwd
+    - name: Build package
+      run: |
+        echo "Python data path: ${BASE_DATA_PYTHON}"
+        # set LD_LIBRARY_PATH to find the MUMPS libraries
+        export LIBRARY_PATH=${BASE_DATA_PYTHON}/lib
+        export C_INCLUDE_PATH=${BASE_DATA_PYTHON}/include
+        # export
+
+        # update pip
+        python -m pip install --upgrade pip
+        # pip install build
+        # python -m build
+    - name: Install package
+      run: |
+        # set LD_LIBRARY_PATH to find the MUMPS libraries
+        # export LIBRARY_PATH=${BASE_DATA_PYTHON}/lib
+        # export C_INCLUDE_PATH=${BASE_DATA_PYTHON}/include
+        # pip install .[test]
+        pip install -v -Ccmake.define.MUMPS_ROOT=${BASE_DATA_PYTHON}/ -e .[test]
+    - name: Run tests
+      run: |
+        python -m pytest
+
+
+  run_tests_mumps-with-parallel:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mumps-version: ["5.8.2"] 
+    steps:
+    - name: Install the dependencies
+      run: |              
+        # install ubuntu package
+        sudo apt-get update
+         # add mpirun
+        sudo apt-get install -yy \
+          build-essential \
+          wget \
+          cmake \
+          gcc \
+          g++ \
+          gfortran \
+          libblas-dev \
+          liblapack-dev 
+    - uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: openmpi
+        
+    - uses: actions/checkout@main
+    - name: Set up Python 3.13
+      uses: actions/setup-python@main
+      with:
+        python-version: 3.13
+
+    - name: Set up environment variables
+      run: |
+        # get python path
+        BASE_DATA_PYTHON=$(python -c "from sysconfig import get_paths;print(get_paths()['data'])")
+        echo "TMP_FOLDER_MUMPS_SRC=$TMP_FOLDER_MUMPS_SRC" >> $GITHUB_ENV
+        echo "BASE_DATA_PYTHON=$BASE_DATA_PYTHON" >> $GITHUB_ENV
+        echo "Python data path: ${BASE_DATA_PYTHON}"
+    - name: Install MUMPS ${{ matrix.mumps-version }}
+      run: |
+        # set a temp directory for mumps build and venv
+        TMP_FOLDER_MUMPS_SRC=$(mktemp -d)
+        # VENV_DIR=$(mktemp -d)
+        # python -m venv ${VENV_DIR}
+        # get cwd
+        cwd=$(pwd)
+        echo $cwd
+
+        # install MUMPS from source with not all number types to test the degraded behavior of the package when some MUMPS libraries are missing
+        git clone https://github.com/scivision/mumps.git $TMP_FOLDER_MUMPS_SRC
+        cd $TMP_FOLDER_MUMPS_SRC 
+        # build parallel version of MUMPS with MPI support
+        cmake -Bbuild \
+          -DBUILD_SINGLE=on \
+          -DBUILD_DOUBLE=on \
+          -DBUILD_COMPLEX=on \
+          -DBUILD_COMPLEX16=on \
+          -DMUMPS_parallel=on \
+          -DBUILD_SHARED_LIBS=on  \
+          -DMUMPS_UPSTREAM_VERSION=${{ matrix.mumps-version }} \
+          --install-prefix=${BASE_DATA_PYTHON}
+        cmake --build build -j2
+        cmake --install build  
+        #
+        cd $cwd
+    - name: Build package
+      run: |
+        echo "Python data path: ${BASE_DATA_PYTHON}"
+        # set LD_LIBRARY_PATH to find the MUMPS libraries
+        export LIBRARY_PATH=${BASE_DATA_PYTHON}/lib
+        export C_INCLUDE_PATH=${BASE_DATA_PYTHON}/include
+        # export
+
+        # update pip
+        python -m pip install --upgrade pip
+        # pip install build
+        # python -m build
+    - name: Install package
+      run: |
+        # set LD_LIBRARY_PATH to find the MUMPS libraries
+        # export LIBRARY_PATH=${BASE_DATA_PYTHON}/lib
+        # export C_INCLUDE_PATH=${BASE_DATA_PYTHON}/include
+        # pip install .[test]
+        pip install -v -Ccmake.define.MUMPS_ROOT=${BASE_DATA_PYTHON}/ -e .[test]
+    - name: Run tests
+      run: |
+        # run with only on 2 processes on GA
+        mpirun -np 2 python -m pytest
+
+
+      

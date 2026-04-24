@@ -1,0 +1,44 @@
+name: Trigger Read the Docs On Version Tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-rtd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load RTD credentials
+        id: rtd_creds
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ALL_SECRETS='${{ toJson(secrets) }}'
+          RTDS_WEBHOOK_URL=$(python -c "import json, os; print(json.loads(os.environ['ALL_SECRETS']).get('RTDS_WEBHOOK_URL', ''))")
+          RTDS_WEBHOOK_TOKEN=$(python -c "import json, os; print(json.loads(os.environ['ALL_SECRETS']).get('RTDS_WEBHOOK_TOKEN', ''))")
+
+          if [[ -z "${RTDS_WEBHOOK_URL:-}" || -z "${RTDS_WEBHOOK_TOKEN:-}" ]]; then
+            echo "RTDS_WEBHOOK_URL and/or RTDS_WEBHOOK_TOKEN are not configured."
+            echo "Add them as repository secrets in GitHub Actions settings."
+            exit 1
+          fi
+
+          echo "webhook_url=${RTDS_WEBHOOK_URL}" >> "$GITHUB_OUTPUT"
+          echo "webhook_token=${RTDS_WEBHOOK_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Read the Docs build
+        uses: dfm/rtds-action@v1
+        with:
+          webhook_url: ${{ steps.rtd_creds.outputs.webhook_url }}
+          webhook_token: ${{ steps.rtd_creds.outputs.webhook_token }}
+          commit_ref: ${{ github.ref }}
