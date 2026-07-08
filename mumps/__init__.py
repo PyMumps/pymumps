@@ -1,13 +1,19 @@
 import warnings
+import numpy as np
+import numpy.typing as npt
+import scipy as sp
 
 __all__ = [
     'DMumpsContext',
+    'SMumpsContext',
     'ZMumpsContext',
+    'CMumpsContext',
     'spsolve',
+    'factorize',
     '__version__',
     ]
 
-__version__ = '0.4.0'
+__version__ = '0.6.0'
 
 ########################################################################
 # Classes
@@ -38,7 +44,7 @@ class _MumpsBaseContext(object):
         assert abs(A.dot(x) - b).max() < 1e-10
     """
 
-    def __init__(self, par=1, sym=0, comm=None):
+    def __init__(self, par=1, sym=0, comm=None, del_warning=True):
         """Create a MUMPS solver context.
 
         Parameters
@@ -63,6 +69,8 @@ class _MumpsBaseContext(object):
         self.run(job = -1) # JOB_INIT
         self.myid = comm.rank
         self._refs = {} # References to matrices
+        #
+        self.del_warning = del_warning
 
     def __enter__(self):
         return self
@@ -73,6 +81,11 @@ class _MumpsBaseContext(object):
     def set_shape(self, n):
         """Set the matrix shape."""
         self.id.n = n
+        
+    def set_rhs_shape(self, nz_rhs, nrhs=1):
+        """Set the rhs shape."""
+        self.id.nz_rhs = nz_rhs # total nonzeros in rhs
+        self.id.nrhs = nrhs # number of columns in rhs
 
     def set_centralized_sparse(self, A):
         """Set assembled matrix on processor 0.
@@ -92,7 +105,6 @@ class _MumpsBaseContext(object):
         self.set_shape(n)
         self.set_centralized_assembled(A.row+1, A.col+1, A.data)
 
-
     ####################################################################
     # Centralized (the rank 0 process supplies the entire matrix)
     ####################################################################
@@ -104,7 +116,7 @@ class _MumpsBaseContext(object):
         """
         self.set_centralized_assembled_rows_cols(irn, jcn)
         self.set_centralized_assembled_values(a)
-
+    
     def set_centralized_assembled_rows_cols(self, irn, jcn):
         """Set assembled matrix indices on processor 0.
 
@@ -117,6 +129,7 @@ class _MumpsBaseContext(object):
         self.id.nz = irn.size
         self.id.irn = self.cast_array(irn)
         self.id.jcn = self.cast_array(jcn)
+        
 
     def set_centralized_assembled_values(self, a):
         """Set assembled matrix values on processor 0."""
@@ -125,7 +138,6 @@ class _MumpsBaseContext(object):
         assert a.size == self.id.nz
         self._refs.update(a=a)
         self.id.a = self.cast_array(a)
-
 
     ####################################################################
     # Distributed (each process enters some portion of the matrix)
@@ -167,9 +179,103 @@ class _MumpsBaseContext(object):
 
     def set_rhs(self, rhs):
         """Set the right hand side. This matrix will be modified in place."""
-        assert rhs.size == self.id.n
-        self._refs.update(rhs=rhs)
+        if len(rhs.shape) == 1:
+            assert rhs.size == self.id.n
+            nrhs = 1
+            lrhs = 0
+        else:
+            if rhs.shape[0] == self.id.n:
+                nrhs = rhs.shape[1]
+                lrhs = rhs.shape[0]
+            elif rhs.shape[1] == self.id.n:
+                nrhs = rhs.shape[0]
+                lrhs = rhs.shape[1]
+            else:
+                raise ValueError("Incompatible right-hand side dimensions")
+        # rhs_mod = rhs.flatten()
+        self._refs.update(rhs=rhs, nrhs=nrhs, lrhs=lrhs)
         self.id.rhs = self.cast_array(rhs)
+        self.id.nrhs = nrhs
+        self.id.lrhs = lrhs
+        self.set_rhs_sparse_deactive() # make sure sparse rhs mode is deactivated
+    
+    def set_rhs_centralized_sparse(self, rhs):
+        """Set assembled rhs on processor 0.
+
+        Parameters
+        ----------
+        rhs : `scipy.sparse.coo_matrix`
+                Sparse matrices of other formats will be converted to
+                COOrdinate form.
+        """
+        if self.myid != 0:
+            return
+
+        # if rhs.size == self.id.n:
+        #     nrhs = 1
+        #     lrhs = 1
+        # else:
+        if rhs.shape[0] == self.id.n:
+            nrhs = rhs.shape[1]
+            lrhs = rhs.shape[0]
+        elif rhs.shape[1] == self.id.n:
+            nrhs = rhs.shape[0]
+            lrhs = rhs.shape[1]
+        else:
+            raise ValueError("Incompatible right-hand side dimensions")
+
+        rhs = rhs.tocsr() ## caution: require to get indices/indptr in the right format for MUMPS
+        n = rhs.shape
+        if self.id.n > 1 and not (n[0] == self.id.n or n[1] == self.id.n):
+            warnings.warn("Potential incompatible right-hand side dimensions")
+            
+        self.set_rhs_shape(rhs.nnz, nrhs)
+        self.set_rhs_centralized_assembled(rhs.indices+1, rhs.indptr+1, rhs.data)
+        self.set_rhs_sparse_mode(mode=1) # sparse rhs (auto mode for MUMPS)
+        self.tmp = rhs
+        return self.allocate_rhs(lrhs, nrhs, rhs.dtype) # return initially empty space (array)
+        
+    def allocate_rhs(self, lrhs, nrhs, rhs_dtype):
+        """Allocate space for the right hand side."""
+        if self.myid != 0:
+            return
+        rhs_empty = np.zeros((nrhs,lrhs), dtype=rhs_dtype)
+        self._refs.update(rhs=rhs_empty, lrhs=lrhs, nrhs=nrhs)
+        self.id.rhs = self.cast_array(rhs_empty)
+        self.id.lrhs = lrhs
+        self.id.nrhs = nrhs
+        return rhs_empty # return initially empty space (array)
+        
+    def set_rhs_centralized_assembled(self, irhs_sparse, irhs_ptr, rhs_sparse):
+        """Set assembled rhs on processor 0.
+
+        The pointers and indices should be one based.
+        """
+        self.set_rhs_centralized_assembled_ptr_indices(irhs_ptr, irhs_sparse)
+        self.set_rhs_centralized_assembled_values(rhs_sparse)   
+    
+        
+    def set_rhs_centralized_assembled_ptr_indices(self, irhs_ptr, irhs_sparse):
+        """Set assembled rhs indices on processor 0.
+
+        The pointers and indices should be one based.
+        """
+        if self.myid != 0:
+            return
+        assert irhs_ptr.size == self.id.nrhs+1
+        assert irhs_sparse.size == self.id.nz_rhs
+        self._refs.update(irhs_ptr=irhs_ptr, irhs_sparse=irhs_sparse)
+        self.id.irhs_ptr = self.cast_array(irhs_ptr)
+        self.id.irhs_sparse = self.cast_array(irhs_sparse)
+
+        
+    def set_rhs_centralized_assembled_values(self, rhs):
+        """Set assembled rhs values on processor 0."""
+        if self.myid != 0:
+            return
+        assert rhs.size == self.id.nz_rhs
+        self._refs.update(rhs_sparse=rhs)
+        self.id.rhs_sparse = self.cast_array(rhs)
 
     def set_icntl(self, idx, val):
         """Set an icntl value.
@@ -230,6 +336,24 @@ class _MumpsBaseContext(object):
     def set_job(self, job):
         """Set the job."""
         self.id.job = job
+        
+    def set_rhs_sparse_mode(self, mode=1):
+        """Set the right hand side sparse mode.
+
+        This is necessary when using the set_rhs_centralized_assembled_rows_cols
+        or set_rhs_centralized_assembled methods to provide a sparse right hand side.
+        
+        mode = 1,2,3 for sparse RHS
+        """
+        id_icntl = 20
+        self.set_icntl(id_icntl, mode)
+        
+    def set_rhs_sparse_deactive(self):
+        """
+        Deactivate the right hand side sparse mode
+        """
+        id_icntl = 20
+        self.set_icntl(id_icntl, 0)
 
     def set_silent(self):
         """Silence most messages."""
@@ -251,7 +375,7 @@ class _MumpsBaseContext(object):
         self._refs = None
 
     def __del__(self):
-        if not self.destroyed:
+        if not self.destroyed and self.del_warning:
             warnings.warn("undestroyed %s" % self.__class__.__name__,
                           RuntimeWarning)
         self.destroy()
@@ -324,6 +448,102 @@ except ImportError:
     pass
 
 ########################################################################
+# Classes
+########################################################################
+class factorize:
+    """A factorized MUMPS solver.
+
+    This class is a simple wrapper around the MUMPS context which allows you to factorize a matrix once and then solve for multiple right hand sides.
+    """
+    def __init__(self, A: npt.NDArray|sp.sparse.spmatrix=None, comm=None, options: dict={'det': True}):
+        self.type = A.dtype
+        self.rhs: npt.NDArray|None = None
+        if self.type == 'f':
+            context = SMumpsContext
+            self.dtype = 'f'
+        elif self.type == 'F':
+            context = CMumpsContext
+            self.dtype = 'F'
+        elif self.type == 'd':
+            context = DMumpsContext
+            self.dtype = 'd'
+        elif self.type == 'D':
+            context = ZMumpsContext
+            self.dtype = 'D'
+        else:
+            raise ValueError('Unsupported data types.')
+        self.ctx = context(par=1, sym=0, comm=comm)
+        self.ctx.set_silent()
+        if options.get('det', False):
+            self.ctx.set_icntl(33, 1)  # computation of determinant required
+        if A is not None:
+            if self.ctx.myid == 0:
+                self.set_matrix(A)        
+        
+        self.ctx.run(job=4) # Analysis + Factorization
+    
+    def __del__(self):
+        self.ctx.destroy()
+    def __exit__(self, *exc_info):
+        self.ctx.destroy()
+    def destroy(self):
+        """Destroy the MUMPS context and free resources."""
+        self.ctx.destroy()
+        
+    def set_matrix(self, matrix: npt.NDArray|sp.sparse.spmatrix)-> None:
+        """ Set the matrix to be factorized. This should only be called on the rank 0 process. """
+        if isinstance(matrix, sp.sparse.spmatrix):
+            self.ctx.set_centralized_sparse(matrix.tocoo()) 
+        else:
+            self.irn, self.jcn = np.indices(matrix.shape, dtype=np.int32)
+            self.irn = self.irn.ravel() + 1
+            self.jcn = self.jcn.ravel() + 1
+            self.ctx.set_shape(matrix.shape[0]) 
+            matrix_ravel = matrix.ravel()
+            self.ctx.set_centralized_assembled(self.irn,
+                                              self.jcn,
+                                              matrix_ravel)
+    
+    @property
+    def det(self)-> complex|float|None:
+        """ Compute the determinant of the matrix. This requires that icntl(33) be set to 1 before factorization. If the determinant was not computed, a warning is issued and None is returned."""
+        if self.ctx.myid == 0:
+            if self.ctx.get_icntl(33) == 0:
+                warnings.warn("Determinant was not computed. Please set icntl(33)=1 to compute the determinant.")
+                return None
+            # get determinant infos
+            a = self.ctx.get_rinfog(12)
+            b = self.ctx.get_rinfog(13)
+            c = self.ctx.get_infog(34)
+            if b > 0:
+                return (a + 1j*b)*2**c
+            else:
+                return a*2**c
+        else:
+            return None
+        
+    def set_rhs(self, rhs: npt.NDArray|sp.sparse.spmatrix=None)-> None:
+        """ Set the right hand side. This matrix will be modified in place. """
+        if rhs.__class__.__module__.startswith('scipy.sparse'):
+                self.rhs = self.ctx.set_rhs_centralized_sparse(rhs)
+        else:
+            self.rhs = rhs.copy()
+            self.ctx.set_rhs(self.rhs)
+
+        
+    def solve(self, b: npt.NDArray|sp.sparse.spmatrix=None)-> npt.NDArray|None:
+        """Solve for the given right hand side."""
+        # check b
+        assert b.dtype == self.dtype
+        if self.ctx.myid == 0:
+            self.set_rhs(b)
+        self.ctx.run(job=3) # Solve
+        if self.ctx.myid == 0:
+            return self.rhs
+        else:
+            return None
+
+########################################################################
 # Functions
 ########################################################################
 
@@ -341,18 +561,22 @@ def spsolve(A, b, comm=None):
     else:
         raise ValueError('Unsupported data types.')
 
-    with context(par=1, sym=0, comm=comm) as ctx:
+    with context(par=1, sym=0, comm=comm, del_warning=True) as ctx:
         if ctx.myid == 0:
             # Set the sparse matrix -- only necessary on
             ctx.set_centralized_sparse(A.tocoo())
-            x = b.copy()
-            ctx.set_rhs(x)
+            if b.__class__.__module__.startswith('scipy.sparse'):
+                x = ctx.set_rhs_centralized_sparse(b)
+            else:
+                x = b.copy()
+                ctx.set_rhs(x)
 
         # Silence most messages
         ctx.set_silent()
 
         # Analysis + Factorization + Solve
         ctx.run(job=6)
-
+        
+        # export only on rank/id 0, otherwise return None
         if ctx.myid == 0:
             return x

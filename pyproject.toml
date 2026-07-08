@@ -15,6 +15,8 @@ authors = [
 ]
 maintainers = [
   {name = "Stephan Rave", email = "stephan.rave@uni-muenster.de"},
+  {name = "Luc Laurent", email = "luc.laurent@lecnam.net"},
+  {name = "Olivier De Smet", email = "olivier.desmet@lecnam.net"},
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -25,6 +27,7 @@ classifiers = [
 dependencies = [
   "mpi4py",
   "numpy",
+  "scipy",
 ]
 
 [dependency-groups]
@@ -39,13 +42,65 @@ source = "http://github.com/pymumps/pymumps"
 tracker = "http://github.com/pymumps/pymumps/issues"
 
 [tool.scikit-build]
+build-dir = "build"
 sdist.exclude = [".gitignore", ".gitattributes"]
 
 [tool.scikit-build.wheel]
-exclude = ["**.pyx"]
+exclude = ["**.pyx","**.tpl"]
 packages = ["mumps"]
-
 
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
 input = "mumps/__init__.py"
+
+[project.optional-dependencies]
+dev = [
+"pylint ~=2.14.0",
+"toml ~=0.10.2",
+"yapf ~=0.32.0"
+]
+test = [
+"pytest", 
+"pytest-cov[all]", 
+"pytest-benchmark",
+"scipy"
+]
+
+[tool.pytest.ini_options]
+addopts = "" 
+#"-n 10"
+testpaths = "tests"
+# addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 1"
+
+[tool.coverage.run]
+branch = true
+command_line = "-m unittest discover -s src/tests/"
+
+[tool.coverage.html]
+directory = "coverage_html_report"
+
+[tool.ruff]
+# Allow lines to be as long as 120.
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"
+
+# [tool.cibuildwheel]
+# test-requires = "pytest"
+# test-command = "python -m pytest --pyargs SILEXlib.tests"
+# manylinux-x86_64-image = "manylinux2014"
+
+# [tool.cibuildwheel.linux]
+# repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
+
+# [[tool.cibuildwheel.overrides]]
+# select = "cp3{8,9,10,11}-*"
+
+
+# [tool.setuptools]
+# package-dir = {"" = "src"}
+
+# [tool.setuptools.dynamic]
+# version = {attr = "XXX.__version__"}
+# readme = {file = ["README.md"]}

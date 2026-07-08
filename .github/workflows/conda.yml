@@ -7,53 +7,44 @@ on:
       - main
   pull_request:
 jobs:
-  run_tests:
+  run_tests-conda:
     name: ${{ matrix.os }} - Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os:
-          - ubuntu-22.04
-          - macos-15
-          - windows-2022
+          - ubuntu-latest
+          - macos-latest
+          # - windows-2022 #probably not available on Windows (https://anaconda.org/channels/conda-forge/packages/mumps-mpi/overview)
         python:
           - '3.10'
+          - '3.11'
+          - '3.12'
           - '3.13'
+        mumps:
+          - mumps-mpi
+          - mumps-seq
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@main
       - name: setup-micromamba
-        if: runner.os != 'Windows'
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@main
         with:
           create-args: >-
             python=${{ matrix.python }}
-            mumps-mpi
-            mumps-include
-            mpi4py
-          environment-name: pymumps
-          init-shell: bash
-      - name: setup-micromamba
-        if: runner.os == 'Windows'
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          create-args: >-
-            python=${{ matrix.python }}
-            mumps-seq
+            ${{ matrix.mumps }}
             mpi4py
           environment-name: pymumps
           init-shell: bash
       - name: install pymumps
-        if: runner.os != 'Windows'
         shell: bash -el {0}
         run: |
-          python -m pip install -v --group=dev -Cbuild.verbose=true -Ccmake.define.MUMPS_ROOT=${CONDA_PREFIX} -e .
-      - name: install pymumps
-        if: runner.os == 'Windows'
+          pip install -v -Ccmake.define.MUMPS_ROOT=${CONDA_PREFIX} -e .[test]
+      - name: Run pytest for ${{ matrix.os }} - Python ${{ matrix.python }} - ${{ matrix.mumps }}
         shell: bash -el {0}
         run: |
-          python -m pip install -v --group=dev -Cbuild.verbose=true -Ccmake.define.MUMPS_ROOT=${CONDA_PREFIX}/Library -e .
-      - name: Run pytest
-        shell: bash -el {0}
-        run: |
-          python -m pytest
+          if [[ "${{ matrix.mumps }}" == "mumps-mpi" ]]; then
+            mpirun -n 2 pytest
+          else
+            python -m pytest
+          fi
